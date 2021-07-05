@@ -1,17 +1,18 @@
 import { Router } from "express";
 import UserController from "../controllers/UserController";
 import PresenceController from "../controllers/PresenceController";
+import auth from "../middlewares/auth";
 const router = Router();
 
 router.post("/login", UserController.login);
-router.get("/", UserController.index);
-router.post("/", UserController.create);
-router.get("/:id", UserController.get);
-router.put("/:id", UserController.update);
-router.delete("/:id", UserController.delete);
+router.get("/", auth, UserController.index);
+router.post("/", auth, UserController.create);
+router.get("/:id", auth, UserController.get);
+router.put("/:id", auth, UserController.update);
+router.delete("/:id", auth, UserController.delete);
 
 //User Presence
-router.get("/:id/presence", PresenceController.get);
-router.post("/:id/presence/:type", PresenceController.create);
+router.get("/:id/presence", auth, PresenceController.get);
+router.post("/:id/presence/:type", auth, PresenceController.create);
 
 export default router;
