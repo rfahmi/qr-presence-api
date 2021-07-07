@@ -1,8 +1,17 @@
 const mongoose = require("mongoose");
 
 const PresenceSchema = new mongoose.Schema({
-    userId: {
-        type: String,
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "User",
+    },
+    isLate: {
+        type: Boolean,
+        required: true,
+    },
+    lateDurationMin: {
+        type: Number,
         required: true,
     },
     timestamp: {

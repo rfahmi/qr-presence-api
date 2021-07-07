@@ -85,7 +85,7 @@ class UserController {
             name: req.body.name,
             nik: req.body.nik,
             password: hashPassword,
-            divisionId: req.body.divisionId,
+            division: req.body.division,
             isAdmin: req.body.isAdmin,
         });
         try {
@@ -108,8 +108,9 @@ class UserController {
             name: req.body.name,
             nik: req.body.nik,
             password: req.body.password,
-            divisionId: req.body.divisionId,
+            division: req.body.division,
             isAdmin: req.body.isAdmin,
+            presences: []
         };
         const options = {
             upsert: true,

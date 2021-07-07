@@ -4,6 +4,9 @@ import mongoose from "mongoose";
 import cors from "cors";
 import "dotenv/config";
 import multer from "multer";
+const setTZ = require('set-tz')
+// set timezone
+setTZ('Asia/Jakarta');
 
 /** Mutler Configs */
 var storage = multer.diskStorage({

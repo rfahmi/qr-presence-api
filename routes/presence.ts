@@ -4,5 +4,5 @@ import auth from "../middlewares/auth";
 const router = Router();
 
 router.get("/generateqr", PresenceController.generateQR);
-router.get("/report", auth, PresenceController.downloadReport);
+router.post("/report", auth, PresenceController.downloadReport);
 export default router;
