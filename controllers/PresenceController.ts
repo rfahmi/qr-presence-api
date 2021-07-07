@@ -53,9 +53,15 @@ class PresenceController {
             const userIds = users.map((user: any) => user._id)
             Presence.find({ user: { $in: userIds } }, (err: any, presences: any) => {
                 users.forEach((user: any) => {
-                    let in_count = presences.filter((presence: any) => { return String(presence.user) === String(user._id) && presence.type === "in" })
-                    let out_count = presences.filter((presence: any) => { return String(presence.user) === String(user._id) && presence.type === "out" })
-                    let late_count = in_count.filter((presence: any) => { return presence.isLate })
+                    let in_count = presences.filter((presence: any) => {
+                        return String(presence.user) === String(user._id) && presence.type === "in"
+                    })
+                    let out_count = presences.filter((presence: any) => {
+                        return String(presence.user) === String(user._id) && presence.type === "out"
+                    })
+                    let late_count = in_count.filter((presence: any) => {
+                        return presence.isLate
+                    })
                     let late_min = late_count.length > 1 ?
                         late_count.reduce((a: any, b: any) => a.lateDurationMin + b.lateDurationMin) :
                         late_count.length === 1 ?
@@ -73,7 +79,9 @@ class PresenceController {
 
 
                 //Body dari row ke-3
-                const totalDay = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m').endOf('month').format('D'); //Ambil last day on month,year
+                const totalDay = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m')
+                    .endOf('month')
+                    .format('D'); //Ambil last day on month,year
                 users.forEach((e: any, index: number) => {
 
                     //Deklarasi Variabel Pendukung
