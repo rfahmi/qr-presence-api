@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 class UserController {
     /** Login */
     static async login(req: any, res: any) {
-        const user = await User.findOne({ nik: req.body.nik });
+        const user = await User.findOne({ nik: req.body.nik }).populate("division");
         if (!user)
             return res.status(400).send({
                 success: false,
@@ -62,7 +62,7 @@ class UserController {
         try {
             const data = await User.findOne(
                 { _id: req.params.id }
-            );
+            ).populate("division");
             res.send({
                 success: true,
                 message: "Data Found",
