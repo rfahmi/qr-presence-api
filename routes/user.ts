@@ -13,6 +13,7 @@ router.delete("/:id", auth, UserController.delete);
 
 //User Presence
 router.get("/:id/presence", auth, PresenceController.get);
+router.post("/:id/presence/report/summary", auth, PresenceController.getReportSumary);
 router.post("/:id/presence/:type", auth, PresenceController.create);
 
 export default router;
