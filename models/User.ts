@@ -1,6 +1,13 @@
 import mongoose from "mongoose";
-
-const UserSchema = new mongoose.Schema(
+interface UserInterface {
+    name: string;
+    nik: string;
+    password: string;
+    division: mongoose.Schema.Types.ObjectId;
+    presences: mongoose.Schema.Types.ObjectId[];
+    isAdmin: boolean;
+}
+const UserSchema = new mongoose.Schema<UserInterface>(
     {
         name: {
             type: String,
@@ -37,5 +44,5 @@ const UserSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
-
-export default mongoose.model("User", UserSchema);
+const User = mongoose.model<UserInterface>("User", UserSchema);
+export default User;

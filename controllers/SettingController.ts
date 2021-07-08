@@ -1,4 +1,4 @@
-const Setting = require("../models/Setting");
+import Setting from "../models/Setting"
 
 class SettingController {
     /** Init */

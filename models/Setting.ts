@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
-
-const SettingSchema = new mongoose.Schema({
+interface SettingInterface {
+    uangMakan: number;
+    dendaTelat: number;
+    kelipatanTelatMin: number;
+}
+const SettingSchema = new mongoose.Schema<SettingInterface>({
     uangMakan: {
         type: Number,
         required: true,
@@ -14,5 +18,5 @@ const SettingSchema = new mongoose.Schema({
         required: true,
     },
 });
-
-export default mongoose.model("Setting", SettingSchema);
+const Setting = mongoose.model<SettingInterface>("Setting", SettingSchema);
+export default Setting;

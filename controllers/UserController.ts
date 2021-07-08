@@ -1,37 +1,44 @@
-const User = require("../models/User");
+// const User = require("../models/User");
+import User from "../models/User"
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 class UserController {
     /** Login */
     static async login(req: any, res: any) {
-        const user = await User.findOne({ nik: req.body.nik }).populate("division");
-        if (!user)
-            return res.status(400).send({
-                success: false,
-                message: "User Not Exists",
-            });
-        const validPassword = await bcrypt.compare(
-            req.body.password,
-            user.password
-        );
-
-        if (validPassword) {
-            const token = jwt.sign(
-                { id: user._id },
-                process.env.JWT_SECRET
+        try {
+            const user = await User.findOne({ nik: req.body.nik }).populate("division");
+            if (!user)
+                return res.status(400).send({
+                    success: false,
+                    message: "User Not Exists",
+                });
+            const validPassword = await bcrypt.compare(
+                req.body.password,
+                user.password
             );
-            return res.header("token", token).send({
-                success: true,
-                message: "Access Granted!",
-                data: user,
-            });
-        } else {
-            return res.status(400).send({
-                success: false,
-                message: "Invalid Password",
-            });
+
+            if (validPassword) {
+                const token = jwt.sign(
+                    { id: user._id },
+                    process.env.JWT_SECRET
+                );
+                return res.header("token", token).send({
+                    success: true,
+                    message: "Access Granted!",
+                    data: user,
+                });
+            } else {
+                return res.status(400).send({
+                    success: false,
+                    message: "Invalid Password",
+                });
+            }
+        } catch (error) {
+            res.status(400).send(error);
+
         }
+
     }
 
     /** Get List */

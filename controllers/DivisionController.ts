@@ -1,5 +1,4 @@
-const Division = require("../models/Division");
-
+import Division from "../models/Division"
 class DivisionController {
     /** Get List */
     static async index(req: any, res: any) {

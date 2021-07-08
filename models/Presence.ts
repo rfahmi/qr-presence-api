@@ -1,6 +1,13 @@
 import mongoose from "mongoose";
-
-const PresenceSchema = new mongoose.Schema({
+interface PresenceInterface {
+    user: mongoose.Schema.Types.ObjectId;
+    isLate: boolean;
+    lateDurationMin: number;
+    timestamp: mongoose.Schema.Types.Date;
+    type: string;
+    photo: string;
+}
+const PresenceSchema = new mongoose.Schema<PresenceInterface>({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
@@ -26,5 +33,6 @@ const PresenceSchema = new mongoose.Schema({
         type: String,
     },
 });
+const Presence = mongoose.model<PresenceInterface>("Presence", PresenceSchema);
 
-export default mongoose.model("Presence", PresenceSchema);
+export default Presence;

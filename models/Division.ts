@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
-
-const DivisionSchema = new mongoose.Schema(
+interface DivisionInterface {
+    name: string;
+}
+const DivisionSchema = new mongoose.Schema<DivisionInterface>(
     {
         name: {
             type: String,
@@ -11,5 +13,5 @@ const DivisionSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
-
-export default mongoose.model("Division", DivisionSchema);
+const Division = mongoose.model<DivisionInterface>("Division", DivisionSchema);
+export default Division;
