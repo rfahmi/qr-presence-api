@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const PresenceSchema = new mongoose.Schema({
     user: {
@@ -27,4 +27,4 @@ const PresenceSchema = new mongoose.Schema({
     },
 });
 
-module.exports = mongoose.model("Presence", PresenceSchema);
+export default mongoose.model("Presence", PresenceSchema);

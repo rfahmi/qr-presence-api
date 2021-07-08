@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const DivisionSchema = new mongoose.Schema(
     {
@@ -12,4 +12,4 @@ const DivisionSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model("Division", DivisionSchema);
+export default mongoose.model("Division", DivisionSchema);
