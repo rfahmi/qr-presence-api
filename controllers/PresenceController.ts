@@ -28,7 +28,58 @@ class PresenceController {
             res.status(400).send(error);
         }
     }
+    /** Get One */
+    static async getReportSumary(req: any, res: any) {
+        const { month, year } = req.body;
+        try {
+            const setting = await Setting.findOne({});
+            Presence.find({ user: req.params.id }, (err: any, presences: any) => {
 
+
+                let in_count = presences.filter((e: any) => {
+                    return e.type === "in"
+                })
+                let late_count = in_count.filter((e: any) => {
+                    return e.isLate
+                })
+                let late_min = late_count.length > 1 ?
+                    late_count.reduce((a: any, b: any) => a.lateDurationMin + b.lateDurationMin) :
+                    late_count.length === 1 ?
+                        late_count[0].lateDurationMin : 0
+
+
+
+                const totalDay = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m')
+                    .endOf('month')
+                    .format('D'); //Ambil last day on month,year
+
+                const jumlahTelat = Number(late_count.length); //Count type: in , isLate: true
+                const jumlahMasuk = Number(in_count.length); //Count type: in
+                const tidakHadir = Number(totalDay) - jumlahMasuk;
+                const jumlahTelatMin = Math.round(Number(late_min)); //count late minute 
+                const uangMakan = Number(setting.uangMakan) * jumlahMasuk;
+                const dendaTelat = Number(setting.dendaTelat) * Math.ceil(jumlahTelatMin / Number(setting.kelipatanTelatMin));
+                const ratioMasuk = Math.round((jumlahMasuk / totalDay) * 100);
+                const ratioTelat = Math.round((jumlahTelat / jumlahMasuk) * 100);
+                res.send({
+                    success: true,
+                    message: "Data Found",
+                    data: {
+                        jumlahTelat,
+                        jumlahMasuk,
+                        tidakHadir,
+                        jumlahTelatMin,
+                        uangMakan,
+                        dendaTelat,
+                        ratioMasuk,
+                        ratioTelat
+                    }
+                })
+            })
+        } catch (error) {
+            res.status(400).send(error);
+        }
+    }
     /** Download Report in Excel */
     static async downloadReport(req: any, res: any) {
         const { month, year } = req.body;
