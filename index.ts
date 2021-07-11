@@ -13,7 +13,7 @@ setTZ('Asia/Jakarta');
 var storage = FTPStorage({
     ftp: {
         host: 'ftp.haribahagia.net',
-        secure: true,
+        secure: false,
         username: 'files@haribahagia.net',
         password: 'q6{xGV/q&wu;T4v*'
     },
