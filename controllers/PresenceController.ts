@@ -190,13 +190,13 @@ class PresenceController {
                     req.body.qr
                 );
                 if (!validQR) {
-                    return res.status(400).send({
+                    return res.send({
                         success: false,
                         message: "QR Code Invalid"
                     });
                 }
             } else {
-                return res.status(400).send({
+                return res.send({
                     success: false,
                     message: "Bad Request",
                     data: req.body
@@ -215,7 +215,7 @@ class PresenceController {
         });
 
         if (userData) {
-            return res.status(400).send({
+            return res.send({
                 success: false,
                 message: "Presence exists"
             });

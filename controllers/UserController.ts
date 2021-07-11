@@ -9,7 +9,7 @@ class UserController {
         try {
             const user = await User.findOne({ nik: req.body.nik }).populate("division");
             if (!user)
-                return res.status(200).send({
+                return res.send({
                     success: false,
                     message: "User Not Exists",
                 });
@@ -29,7 +29,7 @@ class UserController {
                     data: user,
                 });
             } else {
-                return res.status(200).send({
+                return res.send({
                     success: false,
                     message: "Invalid Password",
                 });
