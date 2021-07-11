@@ -238,7 +238,7 @@ class PresenceController {
             type: req.params.type,
             isLate,
             lateDurationMin: isLate ? lateDurationMin : 0,
-            photo: req.files.length > 0 ? req.files[0].filename : null,
+            photo: req.files.length > 0 ? req.files[0].key : null,
         });
 
         try {

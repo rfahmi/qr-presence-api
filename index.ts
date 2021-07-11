@@ -4,28 +4,41 @@ import mongoose from "mongoose";
 import cors from "cors";
 import "dotenv/config";
 import multer from "multer";
-import FTPStorage from "multer-ftp";
+import aws from "aws-sdk";
+import multerS3 from "multer-s3";
 const setTZ = require('set-tz')
 // set timezone
 setTZ('Asia/Jakarta');
 
 /** Mutler Configs */
-var storage = FTPStorage({
-    ftp: {
-        host: 'ftp.haribahagia.net',
-        secure: false,
-        username: 'files@haribahagia.net',
-        password: 'q6{xGV/q&wu;T4v*'
+// var storage = multer.diskStorage({
+//     destination: (req: any, file: any, cb: any) => {
+//         cb(null, 'uploads')
+//     },
+//     filename: (req: any, file: any, cb: any) => {
+//         const ext = file.originalname.split('.')[1];
+//         cb(null, file.fieldname + '-' + Date.now() + "." + ext)
+//     }
+// });
+
+var s3 = new aws.S3();
+aws.config.update({
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    region: "us-east-1",
+});
+var storageAWS = multerS3({
+    s3: s3,
+    bucket: 'rfahmibucket',
+    metadata: function (req, file, cb) {
+        cb(null, { fieldName: file.fieldname });
     },
-    destination: (req: any, file: any, cb: any) => {
-        cb(null, 'uploads')
-    },
-    filename: (req: any, file: any, cb: any) => {
+    key: function (req, file, cb) {
         const ext = file.originalname.split('.')[1];
-        cb(null, file.fieldname + '-' + Date.now() + "." + ext)
+        cb(null, Date.now().toString() + "." + ext)
     }
 });
-const upload = multer({ storage });
+const upload = multer({ storage: storageAWS });
 
 /** Express Init */
 const app = express();
