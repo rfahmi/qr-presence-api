@@ -4,12 +4,19 @@ import mongoose from "mongoose";
 import cors from "cors";
 import "dotenv/config";
 import multer from "multer";
+import FTPStorage from "multer-ftp";
 const setTZ = require('set-tz')
 // set timezone
 setTZ('Asia/Jakarta');
 
 /** Mutler Configs */
-var storage = multer.diskStorage({
+var storage = FTPStorage({
+    ftp: {
+        host: 'ftp.haribahagia.net',
+        secure: true,
+        username: 'files@haribahagia.net',
+        password: 'q6{xGV/q&wu;T4v*'
+    },
     destination: (req: any, file: any, cb: any) => {
         cb(null, 'uploads')
     },
