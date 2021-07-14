@@ -34,20 +34,14 @@ class PresenceController {
         try {
             const setting = await Setting.findOne({});
             Presence.find({ user: req.params.id }, (err: any, presences: any) => {
-
-
                 let in_count = presences.filter((e: any) => {
                     return e.type === "in"
                 })
                 let late_count = in_count.filter((e: any) => {
                     return e.isLate
                 })
-                let late_min = late_count.length > 1 ?
-                    late_count.reduce((a: any, b: any) => a.lateDurationMin + b.lateDurationMin) :
-                    late_count.length === 1 ?
-                        late_count[0].lateDurationMin : 0
 
-
+                let late_min = Object.values(late_count).reduce((a: any, { lateDurationMin }) => a + lateDurationMin, 0);
 
                 const totalDay = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m')
                     .endOf('month')
@@ -113,10 +107,7 @@ class PresenceController {
                     let late_count = in_count.filter((presence: any) => {
                         return presence.isLate
                     })
-                    let late_min = late_count.length > 1 ?
-                        late_count.reduce((a: any, b: any) => a.lateDurationMin + b.lateDurationMin) :
-                        late_count.length === 1 ?
-                            late_count[0].lateDurationMin : 0
+                    let late_min = Object.values(late_count).reduce((a: any, { lateDurationMin }) => a + lateDurationMin, 0);
 
                     user.presences = {
                         in: in_count.length,
@@ -169,7 +160,6 @@ class PresenceController {
         const page = Number(req.query.page) || 1;
         const size = Number(req.query.size) || 10;
         const skip = (page - 1) * size;
-        console.log(size);
 
         try {
             const data = await Presence.find({ user: req.params.id })
