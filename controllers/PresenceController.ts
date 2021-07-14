@@ -166,12 +166,22 @@ class PresenceController {
 
     /** Get User Presence */
     static async get(req: any, res: any) {
+        const page = Number(req.query.page) || 1;
+        const size = Number(req.query.size) || 10;
+        const skip = (page - 1) * size;
+        console.log(size);
+
         try {
-            const data = await User.findById(req.params.id).populate("presences");
+            const data = await Presence.find({ user: req.params.id })
+                .limit(size)
+                .skip(skip)
+                .sort({
+                    timestamp: 'desc'
+                });
             res.send({
                 success: true,
                 message: "Data Found",
-                data: data.presences
+                data
             });
         } catch (error) {
             res.status(400).send(error);
