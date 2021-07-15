@@ -3,6 +3,7 @@ interface UserInterface {
     name: string;
     nik: string;
     password: string;
+    publicKey: string;
     division: mongoose.Schema.Types.ObjectId;
     presences: mongoose.Schema.Types.ObjectId[];
     isAdmin: boolean;
@@ -20,6 +21,10 @@ const UserSchema = new mongoose.Schema<UserInterface>(
         password: {
             type: String,
             required: true,
+            default: "",
+        },
+        publicKey: {
+            type: String,
             default: "",
         },
         division: {

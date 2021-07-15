@@ -10,6 +10,7 @@ router.post("/", auth, UserController.create);
 router.get("/:id", auth, UserController.get);
 router.put("/:id", auth, UserController.update);
 router.delete("/:id", auth, UserController.delete);
+router.post("/:id/verifysign", auth, UserController.verifySign);
 
 //User Presence
 router.get("/:id/presence", auth, PresenceController.get);

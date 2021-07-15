@@ -2,6 +2,8 @@
 import User from "../models/User"
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+import NodeRSA from 'node-rsa'
+
 
 class UserController {
     /** Login */
@@ -111,13 +113,6 @@ class UserController {
     /** Update */
     static async update(req: any, res: any) {
         const find = { _id: req.params.id };
-        const data = {
-            name: req.body.name,
-            nik: req.body.nik,
-            password: req.body.password,
-            division: req.body.division,
-            isAdmin: req.body.isAdmin
-        };
         const options = {
             upsert: true,
             useFindAndModify: false
@@ -126,7 +121,7 @@ class UserController {
         try {
             await User.findOneAndUpdate(
                 find,
-                data,
+                req.body,
                 options,
                 (error: any, response: any) => {
                     if (!error) {
@@ -138,7 +133,7 @@ class UserController {
                         res.json({
                             success: true,
                             message: "Data Updated",
-                            data
+                            data: response
                         });
                     }
                 })
@@ -158,6 +153,38 @@ class UserController {
                 success: true,
                 message: "Data Deleted",
                 data
+            });
+        } catch (error) {
+            res.status(400).send(error);
+        }
+    }
+
+    static async verifySign(req: any, res: any) {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.send({
+                success: false,
+                message: "User tidak ada",
+            });
+        }
+        if (!user.publicKey) {
+            return res.send({
+                success: false,
+                message: "Public key tidak tersedia",
+            });
+        }
+        const publicKey = req.body.publicKey;
+        const signature = req.body.signature;
+        const payload = req.params.id;
+        try {
+            const key = new NodeRSA();
+            const publicKeyBuffer = Buffer.from(publicKey, 'base64');
+            const signer = key.importKey(publicKeyBuffer, 'public-der');
+            const signatureVerified = signer.verify(Buffer.from(payload), signature, 'utf8', 'base64');
+
+            res.json({
+                success: signatureVerified,
+                message: signatureVerified ? 'Signature Valid' : 'Signature Invalid',
             });
         } catch (error) {
             res.status(400).send(error);

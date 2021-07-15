@@ -4,7 +4,7 @@
   "description": "\"# qr-presence-api\"",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "nodemon index.ts",
     "build": "tsc --project ./"
   },
   "repository": {
@@ -19,6 +19,7 @@
   "homepage": "https://github.com/rfahmi/qr-presence-api#readme",
   "dependencies": {
     "aws-sdk": "^2.943.0",
+    "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -31,7 +32,9 @@
     "multer": "^1.4.2",
     "multer-ftp": "^1.2.0",
     "multer-s3": "^2.9.0",
+    "node-rsa": "^1.1.1",
     "qrcode": "^1.4.4",
+    "qs": "^6.7.0",
     "set-tz": "^0.2.0",
     "typescript": "^4.2.4"
   },
