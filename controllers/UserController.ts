@@ -173,7 +173,7 @@ class UserController {
                 message: "Public key tidak tersedia",
             });
         }
-        const publicKey = req.body.publicKey;
+        const publicKey = user.publicKey;
         const signature = req.body.signature;
         const payload = req.params.id;
         try {
