@@ -47,7 +47,7 @@ class UserController {
         const size = Number(req.query.size) || 10;
         const skip = (page - 1) * size;
         try {
-            const data = await User.find({})
+            const data = await User.find({}).populate("division")
                 .limit(size)
                 .skip(skip)
                 .sort({
