@@ -4,7 +4,7 @@
   "description": "\"# qr-presence-api\"",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.ts",
+    "start": "node dist/index.js",
     "build": "tsc --project ./"
   },
   "repository": {
