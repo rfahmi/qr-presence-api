@@ -42,7 +42,7 @@ const upload = multer({ storage: storageAWS });
 
 /** Express Init */
 const app = express();
-app.use(cors());
+app.use(cors({ "exposedHeaders": "*" }));
 // for parsing application/json
 app.use(bodyParser.json());
 
