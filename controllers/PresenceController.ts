@@ -83,31 +83,96 @@ class PresenceController {
     static async downloadReport(req: any, res: any) {
         const { month, year } = req.body;
         const momentDate = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m');
+        const momentDate2 = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m');
 
         const setting = await Setting.findOne({});
         //Buat workbook excel
-        var workbook = new excel.Workbook();
+        var workbook = new excel.Workbook({
+            defaultFont: {
+                size: 11,
+            },
+        });
         var worksheet = workbook.addWorksheet('Sheet 1');
         //Header
-        worksheet.cell(1, 1, 2, 1, true).string("No");
-        worksheet.cell(1, 2, 2, 2, true).string("Divisi");
-        worksheet.cell(1, 3, 2, 3, true).string("NIK");
-        worksheet.cell(1, 4, 2, 4, true).string("Nama Karyawan");
-        worksheet.cell(1, 5, 1, 7, true).string("Summary");
-        worksheet.cell(2, 5).string("Hari Kerja");
-        worksheet.cell(2, 6).string("Tidak Hadir");
-        worksheet.cell(2, 7).string("Telat (Kali)");
-        worksheet.cell(2, 8).string("Telat (Menit)");
-        worksheet.cell(1, 9, 1, 10, true).string("Pembayaran");
-        worksheet.cell(2, 9).string("Uang Makan");
-        worksheet.cell(2, 10).string("Denda Telat");
+        let titleCell = workbook.createStyle({
+            alignment: {
+                horizontal: 'center',
+                vertical: 'center',
+            },
+            font: {
+                bold: true,
+                size: 20,
+            },
+        });
+        let headerCell = workbook.createStyle({
+            alignment: {
+                horizontal: 'center',
+                vertical: 'center',
+                wrapText: true
+            },
+            fill: {
+                type: 'pattern',
+                patternType: 'solid',
+                bgColor: '#D6DCE4',
+                fgColor: '#D6DCE4'
+            },
+            font: {
+                bold: true,
+            },
+        });
+        let currencyCell = workbook.createStyle({
+            numberFormat: "Rp #,##0",
+        });
+        let borderCell = workbook.createStyle({
+            border: { // §18.8.4 border (Border)
+                left: {
+                    style: "thin", //§18.18.3 ST_BorderStyle (Border Line Styles) ['none', 'thin', 'medium', 'dashed', 'dotted', 'thick', 'double', 'hair', 'mediumDashed', 'dashDot', 'mediumDashDot', 'dashDotDot', 'mediumDashDotDot', 'slantDashDot']
+                    color: "#000000"// HTML style hex value
+                },
+                right: {
+                    style: "thin",
+                    color: "#000000"
+                },
+                top: {
+                    style: "thin",
+                    color: "#000000"
+                },
+                bottom: {
+                    style: "thin",
+                    color: "#000000"
+                }
+            },
+        });
+        worksheet.cell(1, 1, 1, 10, true).string("LAPORAN KEHADIRAN BULANAN").style(titleCell);
+
+        worksheet.cell(2, 1).string("Tahun").style(borderCell);
+        worksheet.cell(2, 2).string(String(year)).style(borderCell);
+        worksheet.cell(3, 1).string("Bulan").style(borderCell);
+        worksheet.cell(3, 2).string(momentDate.format("MMMM")).style(borderCell);
+        worksheet.cell(4, 1).string("Jumlah Hari").style(borderCell);
+        worksheet.cell(4, 2).string(momentDate.endOf('month').format('D')).style(borderCell);
+        worksheet.cell(5, 1).string("Jumlah Libur").style(borderCell);
+        worksheet.cell(5, 2).string("0").style(borderCell);
+
+        worksheet.cell(7, 1, 8, 1, true).string("No").style(headerCell).style(borderCell);
+        worksheet.cell(7, 2, 8, 2, true).string("Divisi").style(headerCell).style(borderCell);
+        worksheet.cell(7, 3, 8, 3, true).string("NIK").style(headerCell).style(borderCell);
+        worksheet.cell(7, 4, 8, 4, true).string("Nama Karyawan").style(headerCell).style(borderCell);
+        worksheet.cell(7, 5, 7, 8, true).string("Summary").style(headerCell).style(borderCell);
+        worksheet.cell(8, 5).string("Hari Kerja").style(headerCell).style(borderCell);
+        worksheet.cell(8, 6).string("Tidak Hadir").style(headerCell).style(borderCell);
+        worksheet.cell(8, 7).string("Telat (Kali)").style(headerCell).style(borderCell);
+        worksheet.cell(8, 8).string("Telat (Menit)").style(headerCell).style(borderCell);
+        worksheet.cell(7, 9, 7, 10, true).string("Pembayaran").style(headerCell).style(borderCell);
+        worksheet.cell(8, 9).string("Uang Makan").style(headerCell).style(borderCell);
+        worksheet.cell(8, 10).string("Denda Telat").style(headerCell).style(borderCell);
 
         User.find({}).populate('division').lean().exec((err: any, users: any) => {
             const userIds = users.map((user: any) => user._id)
             Presence.find({
                 user: { $in: userIds }, timestamp: {
-                    $gte: momentDate.startOf('day').toDate(),
-                    $lte: momentDate.endOf('month').toDate()
+                    $gte: momentDate2.startOf('day').toDate(),
+                    $lte: momentDate2.endOf('month').toDate()
                 }
             }, (err: any, presences: any) => {
                 users.forEach((user: any) => {
@@ -133,27 +198,27 @@ class PresenceController {
                 });
 
                 //Body dari row ke-3
-                const lastDay = Number(momentDate.endOf('month').format('D'));
+                const lastDay = Number(momentDate2.endOf('month').format('D'));
                 users.forEach((e: any, index: number) => {
 
                     //Deklarasi Variabel Pendukung
-                    const rowNum = index + 3;
+                    const rowNum = index + 9;
                     const jumlahTelat = Number(e.presences.late.num); //Count type: in , isLate: true
                     const jumlahMasuk = Number(e.presences.in); //Count type: in
                     const tidakHadir = lastDay - jumlahMasuk;
                     const jumlahTelatMin = Math.round(Number(e.presences.late.min)); //count late minute 
                     const uangMakan = Number(setting.uangMakan) * jumlahMasuk;
                     const dendaTelat = Number(setting.dendaTelat) * Math.ceil(jumlahTelatMin / Number(setting.kelipatanTelatMin));
-                    worksheet.cell(rowNum, 1).number(rowNum);
-                    worksheet.cell(rowNum, 2).string(e.division.name);
-                    worksheet.cell(rowNum, 3).string(e.nik);
-                    worksheet.cell(rowNum, 4).string(e.name);
-                    worksheet.cell(rowNum, 5).number(lastDay); //Hari Kerja
-                    worksheet.cell(rowNum, 6).number(tidakHadir); //Tidak Hadir
-                    worksheet.cell(rowNum, 7).number(jumlahTelat); //Telat (Kali)
-                    worksheet.cell(rowNum, 8).number(jumlahTelatMin); //Telat (Menit)
-                    worksheet.cell(rowNum, 9).number(uangMakan); //Uang Makan
-                    worksheet.cell(rowNum, 10).number(dendaTelat); //Denda Telat
+                    worksheet.cell(rowNum, 1).number(rowNum - 8).style(borderCell);
+                    worksheet.cell(rowNum, 2).string(e.division.name).style(borderCell);
+                    worksheet.cell(rowNum, 3).number(Number(e.nik)).style(borderCell);
+                    worksheet.cell(rowNum, 4).string(e.name).style(borderCell);
+                    worksheet.cell(rowNum, 5).number(lastDay).style(borderCell); //Hari Kerja
+                    worksheet.cell(rowNum, 6).number(tidakHadir).style(borderCell); //Tidak Hadir
+                    worksheet.cell(rowNum, 7).number(jumlahTelat).style(borderCell); //Telat (Kali)
+                    worksheet.cell(rowNum, 8).number(jumlahTelatMin).style(borderCell); //Telat (Menit)
+                    worksheet.cell(rowNum, 9).number(uangMakan).style(currencyCell).style(borderCell); //Uang Makan
+                    worksheet.cell(rowNum, 10).number(dendaTelat).style(currencyCell).style(borderCell); //Denda Telat
                 });
 
                 //Send excel file sebagai response
