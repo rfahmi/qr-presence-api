@@ -31,9 +31,17 @@ class PresenceController {
     /** Get One */
     static async getReportSumary(req: any, res: any) {
         const { month, year } = req.body;
+        const momentDate = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m');
+
         try {
             const setting = await Setting.findOne({});
-            Presence.find({ user: req.params.id }, (err: any, presences: any) => {
+            Presence.find({
+                user: req.params.id,
+                timestamp: {
+                    $gte: momentDate.startOf('day').toDate(),
+                    $lte: momentDate.endOf('month').toDate()
+                }
+            }, (err: any, presences: any) => {
                 let in_count = presences.filter((e: any) => {
                     return e.type === "in"
                 })
@@ -41,20 +49,17 @@ class PresenceController {
                     return e.isLate
                 })
 
+                const lastDay = Number(momentDate.endOf('month').format('D'));
                 let late_min = Object.values(late_count).reduce((a: any, { lateDurationMin }) => a + lateDurationMin, 0);
-
-                const totalDay = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m')
-                    .endOf('month')
-                    .format('D'); //Ambil last day on month,year
 
                 const jumlahTelat = Number(late_count.length); //Count type: in , isLate: true
                 const jumlahMasuk = Number(in_count.length); //Count type: in
-                const tidakHadir = Number(totalDay) - jumlahMasuk;
+                const tidakHadir = lastDay - jumlahMasuk;
                 const jumlahTelatMin = Math.round(Number(late_min)); //count late minute 
                 const uangMakan = Number(setting.uangMakan) * jumlahMasuk;
                 const dendaTelat = Number(setting.dendaTelat) * Math.ceil(jumlahTelatMin / Number(setting.kelipatanTelatMin));
-                const ratioMasuk = Math.round((jumlahMasuk / totalDay) * 100);
-                const ratioTelat = Math.round((jumlahTelat / jumlahMasuk) * 100);
+                const ratioMasuk = Math.round((jumlahMasuk / lastDay) * 100);
+                const ratioTelat = Math.round((jumlahTelat / jumlahMasuk) * 100) || 0;
                 res.send({
                     success: true,
                     message: "Data Found",
@@ -77,6 +82,8 @@ class PresenceController {
     /** Download Report in Excel */
     static async downloadReport(req: any, res: any) {
         const { month, year } = req.body;
+        const momentDate = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m');
+
         const setting = await Setting.findOne({});
         //Buat workbook excel
         var workbook = new excel.Workbook();
@@ -87,16 +94,22 @@ class PresenceController {
         worksheet.cell(1, 3, 2, 3, true).string("NIK");
         worksheet.cell(1, 4, 2, 4, true).string("Nama Karyawan");
         worksheet.cell(1, 5, 1, 7, true).string("Summary");
-        worksheet.cell(2, 5).string("Tidak Hadir");
-        worksheet.cell(2, 6).string("Telat (Kali)");
-        worksheet.cell(2, 7).string("Telat (Menit)");
-        worksheet.cell(1, 8, 1, 9, true).string("Pembayaran");
-        worksheet.cell(2, 8).string("Uang Makan");
-        worksheet.cell(2, 9).string("Denda Telat");
+        worksheet.cell(2, 5).string("Hari Kerja");
+        worksheet.cell(2, 6).string("Tidak Hadir");
+        worksheet.cell(2, 7).string("Telat (Kali)");
+        worksheet.cell(2, 8).string("Telat (Menit)");
+        worksheet.cell(1, 9, 1, 10, true).string("Pembayaran");
+        worksheet.cell(2, 9).string("Uang Makan");
+        worksheet.cell(2, 10).string("Denda Telat");
 
-        User.find({}).lean().exec((err: any, users: any) => {
+        User.find({}).populate('division').lean().exec((err: any, users: any) => {
             const userIds = users.map((user: any) => user._id)
-            Presence.find({ user: { $in: userIds } }, (err: any, presences: any) => {
+            Presence.find({
+                user: { $in: userIds }, timestamp: {
+                    $gte: momentDate.startOf('day').toDate(),
+                    $lte: momentDate.endOf('month').toDate()
+                }
+            }, (err: any, presences: any) => {
                 users.forEach((user: any) => {
                     let in_count = presences.filter((presence: any) => {
                         return String(presence.user) === String(user._id) && presence.type === "in"
@@ -119,33 +132,28 @@ class PresenceController {
                     }
                 });
 
-
                 //Body dari row ke-3
-                const totalDay = moment(year + '-' + month + '-01 00:00', 'YYYY-MM-DD h:m')
-                    .endOf('month')
-                    .format('D'); //Ambil last day on month,year
+                const lastDay = Number(momentDate.endOf('month').format('D'));
                 users.forEach((e: any, index: number) => {
 
                     //Deklarasi Variabel Pendukung
                     const rowNum = index + 3;
                     const jumlahTelat = Number(e.presences.late.num); //Count type: in , isLate: true
                     const jumlahMasuk = Number(e.presences.in); //Count type: in
-                    const tidakHadir = Number(totalDay) - jumlahMasuk;
+                    const tidakHadir = lastDay - jumlahMasuk;
                     const jumlahTelatMin = Math.round(Number(e.presences.late.min)); //count late minute 
                     const uangMakan = Number(setting.uangMakan) * jumlahMasuk;
                     const dendaTelat = Number(setting.dendaTelat) * Math.ceil(jumlahTelatMin / Number(setting.kelipatanTelatMin));
-
-                    // console.log(jumlahTelatMin);
-
                     worksheet.cell(rowNum, 1).number(rowNum);
-                    worksheet.cell(rowNum, 2).string("");
+                    worksheet.cell(rowNum, 2).string(e.division.name);
                     worksheet.cell(rowNum, 3).string(e.nik);
                     worksheet.cell(rowNum, 4).string(e.name);
-                    worksheet.cell(rowNum, 5).number(tidakHadir); //Tidak Hadir
-                    worksheet.cell(rowNum, 6).number(jumlahTelat); //Telat (Kali)
-                    worksheet.cell(rowNum, 7).number(jumlahTelatMin); //Telat (Menit)
-                    worksheet.cell(rowNum, 8).number(uangMakan); //Uang Makan
-                    worksheet.cell(rowNum, 9).number(dendaTelat); //Denda Telat
+                    worksheet.cell(rowNum, 5).number(lastDay); //Hari Kerja
+                    worksheet.cell(rowNum, 6).number(tidakHadir); //Tidak Hadir
+                    worksheet.cell(rowNum, 7).number(jumlahTelat); //Telat (Kali)
+                    worksheet.cell(rowNum, 8).number(jumlahTelatMin); //Telat (Menit)
+                    worksheet.cell(rowNum, 9).number(uangMakan); //Uang Makan
+                    worksheet.cell(rowNum, 10).number(dendaTelat); //Denda Telat
                 });
 
                 //Send excel file sebagai response

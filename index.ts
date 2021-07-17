@@ -8,18 +8,8 @@ import aws from "aws-sdk";
 import multerS3 from "multer-s3";
 const setTZ = require('set-tz')
 // set timezone
-setTZ('Asia/Jakarta');
 
-/** Mutler Configs */
-// var storage = multer.diskStorage({
-//     destination: (req: any, file: any, cb: any) => {
-//         cb(null, 'uploads')
-//     },
-//     filename: (req: any, file: any, cb: any) => {
-//         const ext = file.originalname.split('.')[1];
-//         cb(null, file.fieldname + '-' + Date.now() + "." + ext)
-//     }
-// });
+setTZ('Asia/Jakarta');
 
 var s3 = new aws.S3();
 aws.config.update({
