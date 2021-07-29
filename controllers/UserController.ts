@@ -1,6 +1,8 @@
 import NodeRSA from 'node-rsa';
 import User from "../models/User";
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
 
 class UserController {
     /** Login */
