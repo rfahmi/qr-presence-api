@@ -1,9 +1,6 @@
-// const User = require("../models/User");
-import User from "../models/User"
-const bcrypt = require("bcryptjs");
+import NodeRSA from 'node-rsa';
+import User from "../models/User";
 const jwt = require("jsonwebtoken");
-import NodeRSA from 'node-rsa'
-
 
 class UserController {
     /** Login */
@@ -40,7 +37,48 @@ class UserController {
             res.status(400).send(error);
 
         }
+    }
 
+    static async loginAdmin(req: any, res: any) {
+        try {
+            const user = await User.findOne({ nik: req.body.nik }).populate("division");
+            if (!user)
+                return res.send({
+                    success: false,
+                    message: "User Not Exists",
+                });
+
+            if (!user.isAdmin)
+                return res.send({
+                    success: false,
+                    message: "Permission Invalid",
+                });
+
+            const validPassword = await bcrypt.compare(
+                req.body.password,
+                user.password
+            );
+
+            if (validPassword) {
+                const token = jwt.sign(
+                    { id: user._id },
+                    process.env.JWT_SECRET
+                );
+                return res.header("token", token).send({
+                    success: true,
+                    message: "Access Granted!",
+                    data: user,
+                });
+            } else {
+                return res.send({
+                    success: false,
+                    message: "Invalid Password",
+                });
+            }
+        } catch (error) {
+            res.status(400).send(error);
+
+        }
     }
 
     /** Get List */
