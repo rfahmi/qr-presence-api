@@ -3,7 +3,7 @@ import Setting from "../models/Setting"
 import User from "../models/User"
 const bcrypt = require("bcryptjs");
 const QRCode = require('qrcode');
-const moment = require('moment');
+const moment = require('moment-business-days');
 const excel = require('excel4node');
 class PresenceController {
     /** GenerateQR */
@@ -52,18 +52,24 @@ class PresenceController {
                 const lastDay = Number(momentDate.endOf('month').format('D'));
                 let late_min = Object.values(late_count).reduce((a: any, { lateDurationMin }) => a + lateDurationMin, 0);
 
+
+                moment.updateLocale('en', {
+                    workingWeekdays: [1, 2, 3, 4, 5, 6]
+                });
+                const businessDayCount = moment(year + '-' + month + '-01', 'YYYY-MM-DD').businessDiff(moment(year + '-' + month + '-' + lastDay, 'YYYY-MM-DD'));
                 const jumlahTelat = Number(late_count.length); //Count type: in , isLate: true
                 const jumlahMasuk = Number(in_count.length); //Count type: in
-                const tidakHadir = lastDay - jumlahMasuk;
+                const tidakHadir = businessDayCount - jumlahMasuk;
                 const jumlahTelatMin = Math.round(Number(late_min)); //count late minute 
                 const uangMakan = Number(setting.uangMakan) * jumlahMasuk;
                 const dendaTelat = Number(setting.dendaTelat) * Math.ceil(jumlahTelatMin / Number(setting.kelipatanTelatMin));
-                const ratioMasuk = Math.round((jumlahMasuk / lastDay) * 100);
+                const ratioMasuk = Math.round((jumlahMasuk / businessDayCount) * 100);
                 const ratioTelat = Math.round((jumlahTelat / jumlahMasuk) * 100) || 0;
                 res.send({
                     success: true,
                     message: "Data Found",
                     data: {
+                        businessDayCount,
                         jumlahTelat,
                         jumlahMasuk,
                         tidakHadir,
@@ -150,7 +156,7 @@ class PresenceController {
         worksheet.cell(3, 1).string("Bulan").style(borderCell);
         worksheet.cell(3, 2).string(momentDate.format("MMMM")).style(borderCell);
         worksheet.cell(4, 1).string("Jumlah Hari").style(borderCell);
-        worksheet.cell(4, 2).string(momentDate.endOf('month').format('D')).style(borderCell);
+        // worksheet.cell(4, 2).string(momentDate.endOf('month').format('D')).style(borderCell);
         worksheet.cell(5, 1).string("Jumlah Libur").style(borderCell);
         worksheet.cell(5, 2).string("0").style(borderCell);
 
@@ -199,13 +205,19 @@ class PresenceController {
 
                 //Body dari row ke-3
                 const lastDay = Number(momentDate2.endOf('month').format('D'));
+                moment.updateLocale('en', {
+                    workingWeekdays: [1, 2, 3, 4, 5, 6]
+                });
+                const businessDayCount = moment(year + '-' + month + '-01', 'YYYY-MM-DD').businessDiff(moment(year + '-' + month + '-' + lastDay, 'YYYY-MM-DD'));
+                worksheet.cell(4, 2).string(String(businessDayCount)).style(borderCell);
+
                 users.forEach((e: any, index: number) => {
 
                     //Deklarasi Variabel Pendukung
                     const rowNum = index + 9;
                     const jumlahTelat = Number(e.presences.late.num); //Count type: in , isLate: true
                     const jumlahMasuk = Number(e.presences.in); //Count type: in
-                    const tidakHadir = lastDay - jumlahMasuk;
+                    const tidakHadir = businessDayCount - jumlahMasuk;
                     const jumlahTelatMin = Math.round(Number(e.presences.late.min)); //count late minute 
                     const uangMakan = Number(setting.uangMakan) * jumlahMasuk;
                     const dendaTelat = Number(setting.dendaTelat) * Math.ceil(jumlahTelatMin / Number(setting.kelipatanTelatMin));
@@ -213,7 +225,7 @@ class PresenceController {
                     worksheet.cell(rowNum, 2).string(e.division.name).style(borderCell);
                     worksheet.cell(rowNum, 3).number(Number(e.nik)).style(borderCell);
                     worksheet.cell(rowNum, 4).string(e.name).style(borderCell);
-                    worksheet.cell(rowNum, 5).number(lastDay).style(borderCell); //Hari Kerja
+                    worksheet.cell(rowNum, 5).number(businessDayCount).style(borderCell); //Hari Kerja
                     worksheet.cell(rowNum, 6).number(tidakHadir).style(borderCell); //Tidak Hadir
                     worksheet.cell(rowNum, 7).number(jumlahTelat).style(borderCell); //Telat (Kali)
                     worksheet.cell(rowNum, 8).number(jumlahTelatMin).style(borderCell); //Telat (Menit)
@@ -227,7 +239,6 @@ class PresenceController {
         })
 
     }
-
     /** Get User Presence */
     static async get(req: any, res: any) {
         const page = Number(req.query.page) || 1;
@@ -250,14 +261,23 @@ class PresenceController {
             res.status(400).send(error);
         }
     }
-
     /** Create */
     static async create(req: any, res: any) {
+        const today = new Date().toISOString().slice(0, 10);
+        moment.updateLocale('en', {
+            workingWeekdays: [1, 2, 3, 4, 5, 6]
+        });
+        if (!moment(today).isBusinessDay()) {
+            return res.send({
+                success: false,
+                message: "Sekarang hari libur",
+                data: today
+            });
+        }
         //Jika tidak ada photo
         if (!req.files || req.files.length === 0) {
             if (req.body.qr) {
                 //Cek QR code string
-                const today = new Date().toISOString().slice(0, 10);
                 const validQR = await bcrypt.compare(
                     today,
                     req.body.qr
