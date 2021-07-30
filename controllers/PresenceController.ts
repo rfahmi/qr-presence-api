@@ -218,7 +218,7 @@ class PresenceController {
                     const jumlahTelat = Number(e.presences.late.num); //Count type: in , isLate: true
                     const jumlahMasuk = Number(e.presences.in); //Count type: in
                     const tidakHadir = businessDayCount - jumlahMasuk;
-                    const jumlahTelatMin = Math.round(Number(e.presences.late.min)); //count late minute 
+                    const jumlahTelatMin = Math.round(Number(e.presences.late.min)) || 0; //count late minute 
                     const uangMakan = Number(setting.uangMakan) * jumlahMasuk;
                     const dendaTelat = Number(setting.dendaTelat) * Math.ceil(jumlahTelatMin / Number(setting.kelipatanTelatMin));
                     worksheet.cell(rowNum, 1).number(rowNum - 8).style(borderCell);

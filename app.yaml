@@ -1,9 +1,2 @@
 runtime: nodejs
 env: flex
-env_variables:
-    TZ: "Asia/Jakarta"
-    PORT: 3000
-    MONGODB: "mongodb+srv://rfahmi:CERent4z3vB3nr@cluster0.c8puh.mongodb.net/qrpresence"
-    JWT_SECRET: "CERent4z3vB3nr"
-    AWS_ACCESS_KEY_ID: "AKIAT3U4TV4LZSDX7YHX"
-    AWS_SECRET_ACCESS_KEY: "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"
