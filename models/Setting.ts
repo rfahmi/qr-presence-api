@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 interface SettingInterface {
     uangMakan: number;
     dendaTelat: number;
+    jamTelatMasuk: string;
     kelipatanTelatMin: number;
 }
 const SettingSchema = new mongoose.Schema<SettingInterface>({
@@ -11,6 +12,10 @@ const SettingSchema = new mongoose.Schema<SettingInterface>({
     },
     dendaTelat: {
         type: Number,
+        required: true,
+    },
+    jamTelatMasuk: {
+        type: String,
         required: true,
     },
     kelipatanTelatMin: {

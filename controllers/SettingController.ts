@@ -6,6 +6,7 @@ class SettingController {
         const data = new Setting({
             uangMakan: 0,
             dendaTelat: 0,
+            jamTelatMasuk: "080000",
             kelipatanTelatMin: 1,
         });
         try {
@@ -35,11 +36,7 @@ class SettingController {
     }
     /** Update */
     static async update(req: any, res: any) {
-        const data = {
-            uangMakan: req.body.uangMakan,
-            dendaTelat: req.body.dendaTelat,
-            kelipatanTelatMin: req.body.kelipatanTelatMin,
-        };
+        const data = req.body;
         try {
             await Setting.updateMany(data);
             res.send({

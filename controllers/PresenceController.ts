@@ -283,6 +283,7 @@ class PresenceController {
     /** Create */
     static async create(req: any, res: any) {
         const today = new Date().toISOString().slice(0, 10);
+        const setting = await Setting.findOne({});
         moment.updateLocale('en', {
             workingWeekdays: [1, 2, 3, 4, 5, 6]
         });
@@ -336,12 +337,7 @@ class PresenceController {
 
         //Hitung Keterlambatan, Waktu dihitung UTC
         const presenceTime = moment().utc();
-        const lateInTime = moment().set(
-            {
-                "hour": 8,
-                "minute": 0,
-                "second": 0
-            }).utc();
+        const lateInTime = moment(setting.jamTelatMasuk || "080000", 'HH:mm:ss').utc();
         const lateDurationMin = moment.duration(presenceTime.diff(lateInTime)).asMinutes();
         const isLate = req.params.type === "in" && lateDurationMin > 0;
         const data = new Presence({

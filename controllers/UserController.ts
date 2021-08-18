@@ -12,7 +12,7 @@ class UserController {
             if (!user)
                 return res.send({
                     success: false,
-                    message: "User Not Exists",
+                    message: "User tidak ada",
                 });
             const validPassword = await bcrypt.compare(
                 req.body.password,
@@ -47,13 +47,13 @@ class UserController {
             if (!user)
                 return res.send({
                     success: false,
-                    message: "User Not Exists",
+                    message: "User tidak ada",
                 });
 
             if (!user.isAdmin)
                 return res.send({
                     success: false,
-                    message: "Permission Invalid",
+                    message: "User tidak memiliki akses",
                 });
 
             const validPassword = await bcrypt.compare(
