@@ -6,6 +6,25 @@ const QRCode = require('qrcode');
 const moment = require('moment-business-days');
 const excel = require('excel4node');
 class PresenceController {
+    /** History */
+    static async getHistory(req: any, res: any) {
+        const date = moment(req.params.date + ' 00:00', 'YYYY-MM-DD h:m')
+        const data = await Presence.find({
+            timestamp: {
+                $gte: date.startOf('day').toDate(),
+                $lte: date.endOf('day').toDate()
+            }
+        }).populate("user", "name").sort([["user.name", "asc"], ["timestamp", "desc"]]);
+        try {
+            res.send({
+                success: true,
+                message: "History Generated",
+                data
+            });
+        } catch (error) {
+            res.status(400).send(error);
+        }
+    }
     /** GenerateQR */
     static async generateQR(req: any, res: any) {
         const salt = await bcrypt.genSalt(10);
