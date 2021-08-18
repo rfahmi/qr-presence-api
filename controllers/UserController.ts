@@ -165,6 +165,8 @@ class UserController {
                 salt
             );
             req.body['password'] = hashPassword;
+        } else {
+            delete req.body.password;
         }
 
         try {
